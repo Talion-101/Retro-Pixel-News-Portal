@@ -16,9 +16,3 @@ A lightweight, high-frequency live news portal featuring an interactive 8-bit ma
 *   **Styling Engine:** Raw CSS3, Native Variable Trees (`:root`), Custom Embedded SVG cursors, Pixelated Image-Rendering Interpolation, Flexible Grid Matrix Layers.
 *   **Runtime Logic:** Vanilla ECMAScript 6+, Promises, Coordinate Collision Handlers, State Change Triggers.
 *   **Data Sourcing:** RESTful Search APIs.
-
-## 📦 Local Setup Instructions
-
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/YOUR_USERNAME/pixel-news-portal.git](https://github.com/YOUR_USERNAME/pixel-news-portal.git)
