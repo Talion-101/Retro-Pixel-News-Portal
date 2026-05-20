@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+<!-- Tells the browser how to handle screen dimensions natively across touch interfaces -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pixel News Portal</title>
 
 <style>
@@ -17,30 +20,35 @@ body {
   margin: 0;
   overflow-x: hidden;
   cursor: var(--pixel-cursor);
+  -webkit-text-size-adjust: 100%; /* Prevents mobile browsers from automatically blowing up text weights */
 }
 
 /* Header */
 header {
   background: black;
   color: lime;
-  padding: 14px;
+  padding: clamp(10px, 4vw, 20px);
   text-align: center;
   border-bottom: 6px double lime;
 }
 
 header h2 {
   margin: 0 0 5px 0;
-  font-size: 26px;
+  font-size: clamp(20px, 5vw, 28px); /* Scales cleanly across display boundaries */
   text-shadow: 2px 2px 0px #005500;
 }
 
-/* Controls */
+header marquee {
+  font-size: clamp(12px, 3vw, 16px);
+}
+
+/* Controls & Interactive Menu Blocks */
 .controls {
   background: #bfbfbf;
-  padding: 16px;
+  padding: clamp(12px, 4vw, 18px);
   border: 4px solid black;
   box-shadow: 4px 4px 0px #111;
-  margin: 12px;
+  margin: clamp(8px, 3vw, 16px);
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
@@ -50,22 +58,47 @@ header h2 {
 .filter-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  width: 100%; /* Wraps nicely on mobile layouts */
 }
 
+.filter-group label {
+  font-size: clamp(14px, 3.5vw, 16px);
+  white-space: nowrap;
+}
+
+/* Chunky Mobile Touch-Targets Optimization */
 input, button, select {
   font-family: inherit;
-  padding: 8px;
+  padding: clamp(10px, 2.5vw, 12px); /* Larger tap-surface zone for mobile thumbs */
   border: 4px solid black;
   background: white;
-  font-size: 14px;
+  font-size: clamp(14px, 3.5vw, 16px);
   font-weight: bold;
   cursor: var(--pixel-hand);
   outline: none;
+  box-sizing: border-box;
 }
 
-button, select {
+#search {
+  width: 100%; /* Spans full horizontal bounds on small viewports */
+  flex-grow: 1;
+}
+
+#newsCategory {
+  width: 100%;
+}
+
+button {
   box-shadow: 3px 3px 0px #444;
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  .filter-group { width: auto; }
+  #search { width: auto; }
+  #newsCategory { width: auto; }
+  button { width: auto; }
 }
 
 button:active {
@@ -74,27 +107,30 @@ button:active {
 }
 
 .container {
-  padding: 12px;
+  padding: clamp(8px, 3vw, 16px);
 }
 
+/* Solid retro block-style news cards */
 .card {
   background: #f1f1f1;
   border: 4px solid black;
-  box-shadow: 5px 5px 0px black;
-  padding: 14px;
-  margin-bottom: 18px;
+  box-shadow: clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px) 0px black;
+  padding: clamp(12px, 4vw, 18px);
+  margin-bottom: clamp(14px, 4vw, 22px);
   position: relative;
 }
 
+/* Title links scaled dynamically */
 .title {
   color: #0000aa;
   text-decoration: underline;
   font-weight: bold;
-  font-size: 18px;
+  font-size: clamp(16px, 4.5vw, 20px); /* Clean legible reading contrast */
   display: block;
   word-break: break-word;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   cursor: var(--pixel-hand);
+  line-height: 1.4;
 }
 
 .title:hover {
@@ -103,9 +139,16 @@ button:active {
 }
 
 .meta {
-  font-size: 12px;
+  font-size: clamp(11px, 3vw, 13px);
   font-weight: bold;
   color: #333;
+  line-height: 1.5;
+}
+
+.safe, .unsafe { 
+  display: inline-block;
+  margin-top: 4px;
+  font-size: clamp(10px, 2.5vw, 12px);
 }
 
 .safe { 
@@ -123,16 +166,16 @@ button:active {
 
 /* Invisible loading trigger marker */
 #scrollSentinel {
-  height: 20px;
+  height: 30px;
   margin-top: 10px;
   background: transparent;
 }
 
-/* 🐥 PIXEL DUCK */
+/* 🐥 PIXEL DUCK - Responsive constraints */
 .duck {
   position: fixed;
-  width: 80px;
-  height: 80px;
+  width: clamp(60px, 15vw, 80px);
+  height: clamp(60px, 15vw, 80px);
   z-index: 1000;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
@@ -146,8 +189,8 @@ button:active {
 /* 👧 PEEKING KAWAII GIRL */
 .peeker {
   position: fixed;
-  width: 80px;
-  height: 100px;
+  width: clamp(60px, 15vw, 80px);
+  height: clamp(75px, 18.75vw, 100px);
   z-index: 999;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
@@ -159,6 +202,7 @@ button:active {
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* Dynamic side hides matching element sizes safely */
 .peeker.hide-left { left: -90px; transform: scaleX(1); }
 .peeker.hide-right { right: -90px; transform: scaleX(-1); }
 .peeker.show-left { left: 0px; transform: scaleX(1); }
@@ -203,7 +247,7 @@ button:active {
     </select>
   </div>
   
-  <input id="search" placeholder="Search news..." style="flex-grow: 1;">
+  <input id="search" placeholder="Search news...">
   <button onclick="refreshNews()">Refresh</button>
 </div>
 
@@ -221,7 +265,7 @@ let page = 0;
 let loading = false;
 let isEncounterActive = false;
 let isCooldownActive = false;
-let scrollObserver = null; // Track observer state across filter wipes
+let scrollObserver = null;
 
 const VERIFIED_DOMAINS = ["github.com", "bbc.com", "cnn.com", "medium.com", "wikipedia.org", "reddit.com", "techcrunch.com"];
 
@@ -298,6 +342,7 @@ function drawCharacter(elementId, faceMap) {
   container.innerHTML = html;
 }
 
+// Verification mappings
 function isVerified(url) {
   try {
     if (!url || url === "#") return false;
@@ -360,7 +405,6 @@ async function loadNews(reset = false) {
     render();
     page++;
     
-    // Initialize or restart sentinel observation loops safely after structural adjustments
     setupSentinelObserver();
   } catch (err) { 
     console.log(err); 
@@ -409,22 +453,21 @@ function render() {
   });
 }
 
-// --- PERMANENT HARDWARE-ACCELERATED INFINITE SCROLL SYSTEM ---
+// --- HARDWARE-ACCELERATED INFINITE SCROLL SYSTEM ---
 function setupSentinelObserver() {
   if (scrollObserver) {
-    scrollObserver.disconnect(); // Avoid binding multiple tracking layers
+    scrollObserver.disconnect();
   }
 
   const targetNode = document.getElementById("scrollSentinel");
   
-  // High-performance API checking element visibility thresholds instantly on mobile
   scrollObserver = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting && !loading && articles.length > 0) {
       loadNews();
     }
   }, {
-    root: null, // Viewport layout tracking
-    rootMargin: "400px", // Pre-fetch buffer padding zone (loads 400px before reaching screen edge)
+    root: null,
+    rootMargin: "500px", /* Increased buffer padding area to catch mobile swipes proactively */
     threshold: 0.1
   });
 
@@ -441,14 +484,14 @@ let isGirlVisible = false;
 function walkDuck() {
   if (isEncounterActive) return;
 
-  const maxX = window.innerWidth - 100;
-  const maxY = window.innerHeight - 100;
+  const maxX = window.innerWidth - duck.offsetWidth;
+  const maxY = window.innerHeight - duck.offsetHeight;
   
   let randomX, randomY;
 
   if (isGirlVisible) {
     const girlRect = girl.getBoundingClientRect();
-    randomX = currentGirlSide === "left" ? girlRect.right + 10 : girlRect.left - 90;
+    randomX = currentGirlSide === "left" ? girlRect.right + 10 : girlRect.left - (duck.offsetWidth + 10);
     randomY = girlRect.top + 10;
   } else {
     randomX = Math.floor(Math.random() * Math.max(maxX, 0));
@@ -483,8 +526,8 @@ function checkEncounter() {
   const duckRect = duck.getBoundingClientRect();
   const girlRect = girl.getBoundingClientRect();
 
-  const dx = (duckRect.left + 40) - (girlRect.left + 40);
-  const dy = (duckRect.top + 40) - (girlRect.top + 50);
+  const dx = (duckRect.left + (duck.offsetWidth/2)) - (girlRect.left + (girl.offsetWidth/2));
+  const dy = (duckRect.top + (duck.offsetHeight/2)) - (girlRect.top + (girl.offsetHeight/2));
   const distance = Math.sqrt(dx * dx + dy * dy);
 
   if (distance < 140) {
@@ -549,7 +592,7 @@ function duckReact() {
 document.getElementById("search").addEventListener("input", render);
 document.getElementById("newsCategory").addEventListener("change", () => { refreshNews(); });
 
-// Initialization Frame Entry Point
+// Load initial feed
 loadNews();
 </script>
 
