@@ -121,6 +121,13 @@ button:active {
   border: 2px solid red; 
 }
 
+/* Invisible loading trigger marker */
+#scrollSentinel {
+  height: 20px;
+  margin-top: 10px;
+  background: transparent;
+}
+
 /* 🐥 PIXEL DUCK */
 .duck {
   position: fixed;
@@ -202,6 +209,9 @@ button:active {
 
 <div id="news" class="container"></div>
 
+<!-- Infinite Scroll Target Element -->
+<div id="scrollSentinel"></div>
+
 <div class="duck" id="wanderingDuck" onclick="duckReact()"></div>
 <div class="peeker hide-left" id="peekingGirl"></div>
 
@@ -211,6 +221,7 @@ let page = 0;
 let loading = false;
 let isEncounterActive = false;
 let isCooldownActive = false;
+let scrollObserver = null; // Track observer state across filter wipes
 
 const VERIFIED_DOMAINS = ["github.com", "bbc.com", "cnn.com", "medium.com", "wikipedia.org", "reddit.com", "techcrunch.com"];
 
@@ -348,11 +359,19 @@ async function loadNews(reset = false) {
     articles = reset ? newData : [...articles, ...newData];
     render();
     page++;
-  } catch (err) { console.log(err); }
+    
+    // Initialize or restart sentinel observation loops safely after structural adjustments
+    setupSentinelObserver();
+  } catch (err) { 
+    console.log(err); 
+  }
   loading = false;
 }
 
 function refreshNews() {
+  if (scrollObserver) {
+    scrollObserver.disconnect();
+  }
   page = 0;
   articles = [];
   document.getElementById("news").innerHTML = "";
@@ -388,6 +407,28 @@ function render() {
         <div class="meta">Published: <b>${a.time}</b> | By: <b>${a.author}</b> | Source: ${tag}</div>
       </div>`;
   });
+}
+
+// --- PERMANENT HARDWARE-ACCELERATED INFINITE SCROLL SYSTEM ---
+function setupSentinelObserver() {
+  if (scrollObserver) {
+    scrollObserver.disconnect(); // Avoid binding multiple tracking layers
+  }
+
+  const targetNode = document.getElementById("scrollSentinel");
+  
+  // High-performance API checking element visibility thresholds instantly on mobile
+  scrollObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !loading && articles.length > 0) {
+      loadNews();
+    }
+  }, {
+    root: null, // Viewport layout tracking
+    rootMargin: "400px", // Pre-fetch buffer padding zone (loads 400px before reaching screen edge)
+    threshold: 0.1
+  });
+
+  scrollObserver.observe(targetNode);
 }
 
 // --- MASCOT TRACKING ENGINES ---
@@ -505,20 +546,10 @@ function duckReact() {
   }, 300);
 }
 
-// --- MOBILE-OPTIMIZED INFINITE SCROLL SYSTEM ---
-window.addEventListener("scroll", () => {
-  const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const currentScrollPosition = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
-
-  // Calculates scroll metrics uniformly across dynamic mobile UI bars
-  if (scrollableHeight - currentScrollPosition <= 300) {
-    loadNews();
-  }
-});
-
 document.getElementById("search").addEventListener("input", render);
 document.getElementById("newsCategory").addEventListener("change", () => { refreshNews(); });
 
+// Initialization Frame Entry Point
 loadNews();
 </script>
 
