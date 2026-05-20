@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pixel News Portal</title>
+
+<style>
+/* --- 🕹️ CUSTOM PIXEL CURSOR STRINGS --- */
+:root {
+  --pixel-cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0,0 L0,16 L4,12 L8,20 L12,18 L8,10 L14,10 Z" fill="black" stroke="white" stroke-width="2" style="image-rendering:pixelated;"/></svg>'), auto;
+  --pixel-hand: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M8,2 L8,8 L6,8 L6,10 L4,10 L4,14 L6,14 L6,22 L16,22 L16,14 L18,14 L18,10 L16,10 L16,4 L14,4 L14,2 Z" fill="black" stroke="white" stroke-width="2" style="image-rendering:pixelated;"/></svg>'), pointer;
+}
+
+body {
+  background: #2b2b2b;
+  color: #111;
+  font-family: "Courier New", monospace;
+  margin: 0;
+  overflow-x: hidden;
+  cursor: var(--pixel-cursor);
+}
+
+/* Header */
+header {
+  background: black;
+  color: lime;
+  padding: 14px;
+  text-align: center;
+  border-bottom: 6px double lime;
+}
+
+header h2 {
+  margin: 0 0 5px 0;
+  font-size: 26px;
+  text-shadow: 2px 2px 0px #005500;
+}
+
+/* Controls */
+.controls {
+  background: #bfbfbf;
+  padding: 16px;
+  border: 4px solid black;
+  box-shadow: 4px 4px 0px #111;
+  margin: 12px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+input, button, select {
+  font-family: inherit;
+  padding: 8px;
+  border: 4px solid black;
+  background: white;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: var(--pixel-hand);
+  outline: none;
+}
+
+button, select {
+  box-shadow: 3px 3px 0px #444;
+}
+
+button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #444;
+}
+
+.container {
+  padding: 12px;
+}
+
+.card {
+  background: #f1f1f1;
+  border: 4px solid black;
+  box-shadow: 5px 5px 0px black;
+  padding: 14px;
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.title {
+  color: #0000aa;
+  text-decoration: underline;
+  font-weight: bold;
+  font-size: 18px;
+  display: block;
+  word-break: break-word;
+  margin-bottom: 8px;
+  cursor: var(--pixel-hand);
+}
+
+.title:hover {
+  color: #0000ff;
+  background: #e0e0ff;
+}
+
+.meta {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+}
+
+.safe { 
+  color: black; 
+  background: #a3e2a3; 
+  padding: 2px 6px; 
+  border: 2px solid green; 
+}
+.unsafe { 
+  color: black; 
+  background: #ffb3b3; 
+  padding: 2px 6px; 
+  border: 2px solid red; 
+}
+
+/* 🐥 PIXEL DUCK */
+.duck {
+  position: fixed;
+  width: 80px;
+  height: 80px;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  image-rendering: pixelated;
+  cursor: var(--pixel-hand);
+  user-select: none;
+  transition: top 1.2s linear, left 1.2s linear, transform 0.3s ease;
+}
+
+/* 👧 PEEKING KAWAII GIRL */
+.peeker {
+  position: fixed;
+  width: 80px;
+  height: 100px;
+  z-index: 999;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  image-rendering: pixelated;
+  user-select: none;
+  bottom: 30%;
+  cursor: var(--pixel-hand);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.peeker.hide-left { left: -90px; transform: scaleX(1); }
+.peeker.hide-right { right: -90px; transform: scaleX(-1); }
+.peeker.show-left { left: 0px; transform: scaleX(1); }
+.peeker.show-right { right: 0px; transform: scaleX(-1); }
+
+/* Colors */
+.yellow { background: #ffeb3b; }
+.orange { background: orange; }
+.black { background: black; }
+.pink { background: #ff80ab; }
+.skin { background: #ffdbac; }
+.hair { background: #ffb74d; }
+.white { background: #ffffff; }
+.red { background: #e53935; }
+.transparent { background: transparent; }
+
+.duck.spin {
+  transform: rotate(360deg) scale(1.3) !important;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+  <h2>📰 Pixel News Portal</h2>
+  <marquee scrollamount="4">WELCOME TO THE PIXEL INTERNET • LIVE NEWS FEED</marquee>
+</header>
+
+<div class="controls">
+  <div class="filter-group">
+    <label for="newsCategory"><b>News Type:</b></label>
+    <select id="newsCategory">
+      <option value="tech">All Tech</option>
+      <option value="software">Software Engineering</option>
+      <option value="finance">Finance & Economy</option>
+      <option value="ai">AI & Data Science</option>
+      <option value="startups">Startups & Venture</option>
+      <option value="sports">Sports Updates</option>
+      <option value="military">Military & Defense</option>
+    </select>
+  </div>
+  
+  <input id="search" placeholder="Search news..." style="flex-grow: 1;">
+  <button onclick="refreshNews()">Refresh</button>
+</div>
+
+<div id="news" class="container"></div>
+
+<div class="duck" id="wanderingDuck" onclick="duckReact()"></div>
+<div class="peeker hide-left" id="peekingGirl"></div>
+
+<script>
+let articles = [];
+let page = 0;
+let loading = false;
+let isEncounterActive = false;
+let isCooldownActive = false;
+
+const VERIFIED_DOMAINS = ["github.com", "bbc.com", "cnn.com", "medium.com", "wikipedia.org", "reddit.com", "techcrunch.com"];
+
+// Upgraded blacklist array explicitly covering Technology Review and other subscription walls
+const PAYWALL_DOMAINS = [
+  "nytimes.com", 
+  "washingtonpost.com", 
+  "bloomberg.com", 
+  "wsj.com", 
+  "ft.com", 
+  "businessinsider.com", 
+  "hbr.org", 
+  "theatlantic.com", 
+  "economist.com",
+  "technologyreview.com"
+];
+
+// Matrices
+const DUCK_NORMAL = [
+  'y','y','y','y','y','y','t','t',
+  'y','y','b','y','y','y','t','t',
+  'y','y','y','y','o','o','t','t',
+  't','y','y','y','y','t','t','t',
+  't','t','o','o','t','t','t','t'
+];
+
+const DUCK_CUTE = [
+  'y','y','y','y','y','y','t','t',
+  'y','b','y','b','y','y','t','t',
+  'y','p','y','p','o','o','t','t',
+  't','y','y','y','y','t','t','t',
+  't','t','o','o','t','t','t','t'
+];
+
+const GIRL_NORMAL = [
+  't','t','h','h','h','h','t','t',
+  't','h','h','h','h','h','h','t',
+  'h','p','h','s','s','h','p','h',
+  'h','h','s','s','s','s','h','h',
+  'h','s','b','s','s','b','s','h',
+  's','s','s','s','s','s','s','s',
+  's','s','p','s','s','p','s','s',
+  't','s','s','s','s','s','s','t',
+  't','t','s','s','s','s','t','t',
+  't','t','h','h','h','h','t','t'
+];
+
+const GIRL_HEART = [
+  't','t','h','h','h','h','t','t',
+  't','h','h','h','h','h','h','t',
+  'h','p','h','s','s','h','p','h',
+  'h','h','s','s','s','s','h','h',
+  'h','s','r','t','t','r','s','h',
+  's','s','r','r','r','r','s','s',
+  's','s','p','s','s','p','s','s',
+  't','s','s','w','w','s','s','t',
+  't','t','s','s','s','s','t','t',
+  't','t','h','h','h','h','t','t'
+];
+
+function drawCharacter(elementId, faceMap) {
+  const container = document.getElementById(elementId);
+  let html = "";
+  faceMap.forEach(pixel => {
+    if(pixel === 'y') html += '<div class="yellow"></div>';
+    else if(pixel === 'b') html += '<div class="black"></div>';
+    else if(pixel === 'o') html += '<div class="orange"></div>';
+    else if(pixel === 'p') html += '<div class="pink"></div>';
+    else if(pixel === 's') html += '<div class="skin"></div>';
+    else if(pixel === 'h') html += '<div class="hair"></div>';
+    else if(pixel === 'w') html += '<div class="white"></div>';
+    else if(pixel === 'r') html += '<div class="red"></div>';
+    else html += '<div class="transparent"></div>';
+  });
+  container.innerHTML = html;
+}
+
+function isVerified(url) {
+  try {
+    if (!url || url === "#") return false;
+    const domain = new URL(url).hostname;
+    return VERIFIED_DOMAINS.some(d => domain.includes(d));
+  } catch { return false; }
+}
+
+function getTitle(item) { return item.title || item.story_title || "Untitled Article"; }
+
+async function loadNews(reset = false) {
+  if (loading) return;
+  loading = true;
+
+  const category = document.getElementById("newsCategory").value;
+  let queryKeyword = "technology";
+  
+  if (category === "software") queryKeyword = "software engineering programming";
+  else if (category === "finance") queryKeyword = "finance economy markets stocks";
+  else if (category === "ai") queryKeyword = "artificial intelligence machine learning llm";
+  else if (category === "startups") queryKeyword = "startup venture capital founder";
+  else if (category === "sports") queryKeyword = "sports science analytics athlete stadium";
+  else if (category === "military") queryKeyword = "military defense intelligence geopolitical aerospace";
+
+  // Multi-stream extraction targeting date order query paths to simulate secondary live API endpoints
+  const urlPrimary = `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent(queryKeyword)}&tags=story&page=${page}`;
+  const urlSecondary = `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(queryKeyword)}&numericFilters=created_at_i>${Math.floor(Date.now()/1000) - 604800}&page=${page}`;
+
+  try {
+    const [resP, resS] = await Promise.all([
+      fetch(urlPrimary).then(r => r.json()).catch(() => ({ hits: [] })),
+      fetch(urlSecondary).then(r => r.json()).catch(() => ({ hits: [] }))
+    ]);
+
+    // Unify multi-stream feeds and discard duplicates seamlessly
+    const combinedHits = [...resP.hits, ...resS.hits];
+    const uniqueMap = new Map();
+    
+    combinedHits.forEach(item => {
+      if (item.objectID && !uniqueMap.has(item.objectID)) {
+        uniqueMap.set(item.objectID, item);
+      }
+    });
+
+    const newData = Array.from(uniqueMap.values())
+      .filter(a => {
+        if (!a.url || a.url.includes("news.ycombinator.com/item")) return false;
+        const titleLower = getTitle(a).toLowerCase();
+        if (titleLower.startsWith("ask hn:") || titleLower.startsWith("show hn:") || titleLower.startsWith("poll:") || titleLower.startsWith("tell hn:")) {
+          return false;
+        }
+        return !PAYWALL_DOMAINS.some(domain => a.url.includes(domain));
+      })
+      .map(a => ({
+        title: getTitle(a),
+        url: a.url,
+        author: a.author || "unknown",
+        time: formatPublishedTime(a.created_at)
+      }));
+
+    articles = reset ? newData : [...articles, ...newData];
+    render();
+    page++;
+  } catch (err) { console.log(err); }
+  loading = false;
+}
+
+function refreshNews() {
+  page = 0;
+  articles = [];
+  document.getElementById("news").innerHTML = "";
+  loadNews(true);
+}
+
+function formatPublishedTime(isoString) {
+  if (!isoString) return "unknown time";
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleDateString() + " @ " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  } catch { return "recent"; }
+}
+
+function render() {
+  const container = document.getElementById("news");
+  const q = document.getElementById("search").value.toLowerCase();
+  container.innerHTML = "";
+
+  const filtered = articles.filter(a => a.title.toLowerCase().includes(q));
+  if (filtered.length === 0 && !loading) {
+    container.innerHTML = `<div class="card" style="text-align:center; color:#555;">No news reports found.</div>`;
+    return;
+  }
+
+  filtered.forEach((a) => {
+    const verified = isVerified(a.url);
+    const tag = verified ? `<span class="safe">[VERIFIED]</span>` : `<span class="unsafe">[OPEN WEB]</span>`;
+    
+    container.innerHTML += `
+      <div class="card">
+        <a href="${a.url}" target="_blank" class="title">${a.title}</a>
+        <div class="meta">Published: <b>${a.time}</b> | By: <b>${a.author}</b> | Source: ${tag}</div>
+      </div>`;
+  });
+}
+
+// --- MASCOT TRACKING ENGINES ---
+const duck = document.getElementById("wanderingDuck");
+const girl = document.getElementById("peekingGirl");
+
+let currentGirlSide = "left";
+let isGirlVisible = false;
+
+function walkDuck() {
+  if (isEncounterActive) return;
+
+  const maxX = window.innerWidth - 100;
+  const maxY = window.innerHeight - 100;
+  
+  let randomX, randomY;
+
+  if (isGirlVisible) {
+    const girlRect = girl.getBoundingClientRect();
+    randomX = currentGirlSide === "left" ? girlRect.right + 10 : girlRect.left - 90;
+    randomY = girlRect.top + 10;
+  } else {
+    randomX = Math.floor(Math.random() * Math.max(maxX, 0));
+    randomY = Math.floor(Math.random() * Math.max(maxY, 0));
+  }
+  
+  duck.style.left = `${randomX}px`;
+  duck.style.top = `${randomY}px`;
+
+  setTimeout(checkEncounter, 400);
+}
+
+function handleGirlPeeking() {
+  if (isEncounterActive || isGirlVisible || isCooldownActive) return;
+
+  if (Math.random() < 0.8) {
+    currentGirlSide = Math.random() < 0.5 ? "left" : "right";
+    const randomHeight = Math.floor(Math.random() * 50) + 20;
+    girl.style.top = `${randomHeight}%`;
+    
+    girl.className = `peeker show-${currentGirlSide}`;
+    drawCharacter("peekingGirl", GIRL_NORMAL);
+    isGirlVisible = true;
+    
+    walkDuck();
+  }
+}
+
+function checkEncounter() {
+  if (!isGirlVisible || isEncounterActive) return;
+
+  const duckRect = duck.getBoundingClientRect();
+  const girlRect = girl.getBoundingClientRect();
+
+  const dx = (duckRect.left + 40) - (girlRect.left + 40);
+  const dy = (duckRect.top + 40) - (girlRect.top + 50);
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  if (distance < 140) {
+    triggerSpecialEncounter();
+  } else if (isGirlVisible) {
+    walkDuck();
+  }
+}
+
+function triggerSpecialEncounter() {
+  isEncounterActive = true;
+  duck.style.transition = "transform 0.2s ease";
+  
+  drawCharacter("wanderingDuck", DUCK_CUTE);
+  drawCharacter("peekingGirl", GIRL_HEART);
+
+  duck.style.transform = "scale(1.25) translateY(-10px)";
+  
+  setTimeout(() => {
+    duck.style.transform = "scale(1) translateY(0)";
+    drawCharacter("wanderingDuck", DUCK_NORMAL);
+    drawCharacter("peekingGirl", GIRL_NORMAL);
+    
+    duck.style.transition = "top 1.2s linear, left 1.2s linear, transform 0.3s ease";
+    isEncounterActive = false;
+    
+    girl.className = `peeker hide-${currentGirlSide}`;
+    isGirlVisible = false;
+    
+    isCooldownActive = true;
+    setTimeout(() => {
+      isCooldownActive = false;
+    }, 4000);
+    
+    walkDuck();
+  }, 2000);
+}
+
+drawCharacter("wanderingDuck", DUCK_NORMAL);
+drawCharacter("peekingGirl", GIRL_NORMAL);
+walkDuck();
+
+let walkingInterval = setInterval(walkDuck, 1500);
+let girlInterval = setInterval(handleGirlPeeking, 2000);
+
+duck.addEventListener("mouseenter", () => { if(!isEncounterActive) drawCharacter("wanderingDuck", DUCK_CUTE); });
+duck.addEventListener("mouseleave", () => { if(!isEncounterActive) drawCharacter("wanderingDuck", DUCK_NORMAL); });
+
+function duckReact() {
+  if (duck.classList.contains("spin") || isEncounterActive) return;
+  
+  duck.classList.add("spin");
+  duck.style.transition = "top 0.3s ease, left 0.3s ease, transform 0.3s ease";
+  walkDuck();
+  
+  setTimeout(() => {
+    duck.classList.remove("spin");
+    duck.style.transition = "top 1.2s linear, left 1.2s linear, transform 0.3s ease";
+  }, 300);
+}
+
+window.addEventListener("scroll", () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+    loadNews();
+  }
+});
+
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("newsCategory").addEventListener("change", () => { refreshNews(); });
+
+loadNews();
+</script>
+
+</body>
+</html>
