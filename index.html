@@ -214,7 +214,6 @@ let isCooldownActive = false;
 
 const VERIFIED_DOMAINS = ["github.com", "bbc.com", "cnn.com", "medium.com", "wikipedia.org", "reddit.com", "techcrunch.com"];
 
-// Upgraded blacklist array explicitly covering Technology Review and other subscription walls
 const PAYWALL_DOMAINS = [
   "nytimes.com", 
   "washingtonpost.com", 
@@ -312,7 +311,6 @@ async function loadNews(reset = false) {
   else if (category === "sports") queryKeyword = "sports science analytics athlete stadium";
   else if (category === "military") queryKeyword = "military defense intelligence geopolitical aerospace";
 
-  // Multi-stream extraction targeting date order query paths to simulate secondary live API endpoints
   const urlPrimary = `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent(queryKeyword)}&tags=story&page=${page}`;
   const urlSecondary = `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(queryKeyword)}&numericFilters=created_at_i>${Math.floor(Date.now()/1000) - 604800}&page=${page}`;
 
@@ -322,7 +320,6 @@ async function loadNews(reset = false) {
       fetch(urlSecondary).then(r => r.json()).catch(() => ({ hits: [] }))
     ]);
 
-    // Unify multi-stream feeds and discard duplicates seamlessly
     const combinedHits = [...resP.hits, ...resS.hits];
     const uniqueMap = new Map();
     
@@ -508,8 +505,13 @@ function duckReact() {
   }, 300);
 }
 
+// --- MOBILE-OPTIMIZED INFINITE SCROLL SYSTEM ---
 window.addEventListener("scroll", () => {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+  const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const currentScrollPosition = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+
+  // Calculates scroll metrics uniformly across dynamic mobile UI bars
+  if (scrollableHeight - currentScrollPosition <= 300) {
     loadNews();
   }
 });
